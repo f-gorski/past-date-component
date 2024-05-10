@@ -7,15 +7,20 @@ const englishTimeHumanizer = humanizeDuration.humanizer({
   language: "shortEn",
   languages: {
     shortEn: {
+      h: () => "h",
       m: () => "min",
       s: () => "sec",
     },
   },
 });
 
-const UPDATE_INTERVAL = 15_000;
-
-export default function PastDate({ value }: { value: string }) {
+export default function PastDate({
+  value,
+  updateInterval = 15_000,
+}: {
+  value: string;
+  updateInterval?: number;
+}) {
   const [now, setNow] = useState<DateTime>(DateTime.now());
 
   const dateValue = useMemo(() => DateTime.fromISO(value), [value]);
@@ -23,14 +28,15 @@ export default function PastDate({ value }: { value: string }) {
 
   const isWithinMinute = duration < 60_000;
   const isWithinHour = duration < 60_000 * 60;
+  const isWithin24hrs = duration < 60_000 * 60 * 24;
 
   const formattedValue = () => {
     if (!dateValue.isValid) {
       return { mainPart: "N/A", suffixPart: "" };
     }
-    if (isWithinMinute || isWithinHour) {
+    if (isWithinMinute || isWithinHour || isWithin24hrs) {
       return {
-        mainPart: englishTimeHumanizer(duration, { round: true, largest: 1 }),
+        mainPart: englishTimeHumanizer(duration, { round: true, largest: 2 }),
         suffixPart: "ago",
       };
     }
@@ -46,13 +52,19 @@ export default function PastDate({ value }: { value: string }) {
     if (isWithinHour) {
       timeUpdateInterval = setInterval(() => {
         setNow(DateTime.now());
-      }, UPDATE_INTERVAL);
+      }, updateInterval);
+    }
+
+    if (isWithin24hrs && !isWithinHour) {
+      timeUpdateInterval = setInterval(() => {
+        setNow(DateTime.now());
+      }, updateInterval * 2);
     }
 
     return () => {
       clearInterval(timeUpdateInterval);
     };
-  }, [isWithinHour]);
+  }, [updateInterval, isWithinHour, isWithin24hrs]);
 
   return <span>{`${formattedValue().mainPart} ${formattedValue().suffixPart}`}</span>;
 }

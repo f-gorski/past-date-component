@@ -6,11 +6,19 @@ const TIMES = {
   minutes15ago: "2023-01-01T11:45:00.000+01:00",
   hours2ago: "2023-01-01T10:00:00.000+01:00",
   hours1ago: "2023-01-01T11:00:00.000+01:00",
+  hoursMoreThan24ago: "2023-01-02T11:00:00.000+01:00",
 };
+
+const updateIntervalInSeconds = 20;
+const updateIntervalInMiliseconds = updateIntervalInSeconds * 1000;
 
 describe("PastDate", () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date("2023-01-01T12:00:00.000+01:00"));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   it("renders 'N/A' when value is null", () => {
@@ -26,32 +34,40 @@ describe("PastDate", () => {
     expect(screen.getByText("15 min ago")).toBeInTheDocument();
   });
 
-  it("renders a static, formatted date when not within an hour", () => {
-    render(<PastDate value={TIMES.hours2ago} />);
-    expect(screen.getByText("1 Jan 2023 10:00")).toBeInTheDocument();
+  it("renders a static, formatted date when not within 24 hours", () => {
+    render(<PastDate value={TIMES.hoursMoreThan24ago} />);
+    expect(screen.getByText("2 Jan 2023 11:00")).toBeInTheDocument();
   });
 
-  it("updates the displayed time every 15 seconds when within an hour", () => {
-    render(<PastDate value={TIMES.seconds30ago} />);
+  it("updates the displayed time every N seconds when within an hour", () => {
+    render(<PastDate value={TIMES.seconds30ago} updateInterval={updateIntervalInMiliseconds} />);
     expect(screen.getByText("30 sec ago")).toBeInTheDocument();
 
-    // Fast-forward by 15 seconds
+    // Fast-forward by N seconds
     act(() => {
-      jest.advanceTimersByTime(15_000);
+      jest.advanceTimersByTime(updateIntervalInMiliseconds);
     });
 
-    expect(screen.getByText("45 sec ago")).toBeInTheDocument();
+    expect(screen.getByText(`${30 + updateIntervalInSeconds} sec ago`)).toBeInTheDocument();
   });
 
-  it("does not update the displayed time when not within an hour", () => {
-    render(<PastDate value={TIMES.hours1ago} />);
-    expect(screen.getByText("1 Jan 2023 11:00")).toBeInTheDocument();
+  it("does not update the displayed time when not within 24 hours", () => {
+    render(<PastDate value={TIMES.hoursMoreThan24ago} />);
+    expect(screen.getByText("2 Jan 2023 11:00")).toBeInTheDocument();
 
-    // Fast-forward by 15 seconds
+    // Fast-forward by 1 hour
     act(() => {
-      jest.advanceTimersByTime(15_000);
+      jest.advanceTimersByTime(60_000 * 60);
     });
 
-    expect(screen.getByText("1 Jan 2023 11:00")).toBeInTheDocument();
+    expect(screen.getByText("2 Jan 2023 11:00")).toBeInTheDocument();
+    expect(jest.getTimerCount()).toEqual(0);
+  });
+
+  it("leaves no running timers when component unmounts", () => {
+    const { unmount: componentUnmount } = render(<PastDate value={TIMES.seconds30ago} />);
+
+    componentUnmount();
+    expect(jest.getTimerCount()).toEqual(0);
   });
 });
