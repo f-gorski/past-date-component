@@ -1,30 +1,45 @@
-# React + TypeScript + Vite
+# PastDate Component
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React component named `PastDate` designed to display in a formatted, humanized manner how much time has passed since a specified timestamp given as an ISOString. It follows certain rules for formatting the time elapsed based on the duration:
 
-Currently, two official plugins are available:
+- When less than a minute has passed, it displays **"N sec ago"** every X seconds (configurable via a prop) so that the updates are not made too often.
+- When less than an hour has passed, it displays "N min M sec ago" every X seconds (configurable via a prop).
+- When less than 24 hours have passed, it displays hours and minutes every X \* 2 seconds, so that it is even less frequent.
+- When more than 24 hours have passed, it simply statically displays the date since the provided timestamp.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Installation
 
-## Expanding the ESLint configuration
+To install the component, you can simply copy the `PastDate.tsx` file into your React project.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Usage
 
-- Configure the top-level `parserOptions` property like this:
+```jsx
+import React from "react";
+import PastDate from "./PastDate";
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+const MyComponent = () => {
+  const timestamp = new Date().getTime() - 60 * 60 * 1000; // Example timestamp
+
+  return (
+    <div>
+      <p>Time since last activity:</p>
+      <PastDate value={timestamp} />
+    </div>
+  );
+};
+
+export default MyComponent;
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Props
+
+- `value`**\<string\>**: The timestamp to calculate the time elapsed from.
+- `updateInterval?` **\<string\>(optional)**: The interval in milliseconds at which the component updates the displayed time. If not provided, the default update interval is used.
+
+## Example
+
+An example of usage can be found in the provided `src/example` where the PastDate component is used to display the time since the given timestamp.
+
+## Notes
+
+While this project serves as a demonstration of the PastDate component, it's not ideal for production use in its current form. For real-world projects, consider bundling it into e.g. a component library to make it more reusable across different projects.
