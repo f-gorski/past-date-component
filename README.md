@@ -7,9 +7,13 @@ This is a React component named `PastDate` designed to display in a formatted, h
 - When less than 24 hours have passed, it displays hours and minutes every X \* 2 seconds, so that it is even less frequent.
 - When more than 24 hours have passed, it simply statically displays the date since the provided timestamp.
 
+## Important Note
+
+While this project serves as a demonstration of the PastDate component, it is done as a leisure project and it's not recommended for production use in its current form. For real-world projects, consider bundling it into e.g. a component library to make it more reusable across different projects.
+
 ## Installation
 
-To install the component, you can simply copy the `PastDate.tsx` file into your React project.
+To install the component, you can simply copy the `PastDate.tsx` file into your React project (and install its dependencies).
 
 ## Usage
 
@@ -40,6 +44,10 @@ export default MyComponent;
 
 An example of usage can be found in the provided `src/example` where the PastDate component is used to display the time since the given timestamp.
 
-## Notes
+## Tests
 
-While this project serves as a demonstration of the PastDate component, it's not ideal for production use in its current form. For real-world projects, consider bundling it into e.g. a component library to make it more reusable across different projects.
+The component is accompanied by test cases to ensure its functionality. You can execute the tests by running
+
+```bash
+$ npm run test
+```
